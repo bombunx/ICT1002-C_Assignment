@@ -1,0 +1,20 @@
+1) gradient descent
+
+x^(n+1) = x(n) - (k)(change of f(x^n))
+where x^(0) is an element of [a,b]^d, and k is a variable step size
+
+2) gradient descent with momentum term, m
+
+m^(0) = zero vectors in d dims
+m^(n+1) = (alpha)(m^(n)) + (k)(change of f(x^n))
+x^(n+1) = x^(n) - m^(n+1)
+where alpha is an element of (0,1)
+
+3) Newtons algorithm with stabiliser
+
+x^(n+1) = x^n - Inverse(Hessian(f(x^n) + Identity Matrix))(change of f(x^n))
+
+
+
+define threshold to stop looking for minimum
+use external libraries for Hessian and gradient
