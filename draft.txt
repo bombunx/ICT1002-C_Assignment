@@ -1,14 +1,21 @@
 1) gradient descent
 
 x^(n+1) = x(n) - (k)(change of f(x^n))
-where x^(0) is an element of [a,b]^d, and k is a variable step size
+where x^(0) is an element of [a,b]^d, and k is a variable step size,
+a and b defines the boundary
+
+first step:
+determine points on hypercube where gradient is 0.
 
 2) gradient descent with momentum term, m
-
+Momentum allows us to look for global minimum instead of local minimum
 m^(0) = zero vectors in d dims
 m^(n+1) = (alpha)(m^(n)) + (k)(change of f(x^n))
 x^(n+1) = x^(n) - m^(n+1)
 where alpha is an element of (0,1)
+
+At every step k, a fraction, (alpha) is multiplied by the velocity of the previous gradient
+to give momentum m, for next step
 
 3) Newtons algorithm with stabiliser
 
