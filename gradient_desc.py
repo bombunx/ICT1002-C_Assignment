@@ -10,10 +10,9 @@ from matplotlib import rcParams
 
 # Matya's function without momentum
 
-
 def func(x):
     dim = len(x)
-    y = 0.26 * (x[0]+x[1]) - 0.48 *x[0] * x[1]
+    y = 0.26 * (x[0] * x[0]+ x[1] * x[1]) - 0.48 *x[0] * x[1]
     return y
 
 def fprime(x):
@@ -21,32 +20,73 @@ def fprime(x):
 
 x0 = np.array([-10, -10])
     
-# def plotFunc(x0):
-#     x = np.arange(-10, 10, 0.025)
-#     y = np.arange(-10, 10, 0.025)
-#     X, Y = np.meshgrid(x, y)
-#     Z = np.zeros(X.shape)
-#     mesh_size = range(len(X))
-#     for i, j in product(mesh_size, mesh_size):
-#         x_coor = X[i][j]
-#         y_coor = Y[i][j]
-#         Z[i][j] = func(np.array([x_coor, y_coor]))
+def plotFunc(x0):
+    x = np.arange(-10, 10, 0.025)
+    y = np.arange(-10, 10, 0.025)
+    X, Y = np.meshgrid(x, y)
+    Z = np.zeros(X.shape)
+    mesh_size = range(len(X))
+    for i, j in product(mesh_size, mesh_size):
+        x_coor = X[i][j]
+        y_coor = Y[i][j]
+        Z[i][j] = func(np.array([x_coor, y_coor]))
 
-#     fig = plt.figure(figsize=(6,6))
-#     ax = fig.gca(projection='3d')
-#     ax.set_title('Matya function')
-#     ax.set_xlabel('$x_1$')
-#     ax.set_ylabel('$x_2$')
-#     ax.set_zlabel('$f(x_1, x_2)$')
-#     ax.plot_surface(X, Y, Z, cmap='viridis')
-#     plt.tight_layout()
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.gca(projection='3d')
+    ax.set_title('Matya function')
+    ax.set_xlabel('$x_1$')
+    ax.set_ylabel('$x_2$')
+    ax.set_zlabel('$f(x_1, x_2)$')
+    ax.plot_surface(X, Y, Z, cmap='viridis')
+    plt.tight_layout()
 
-# def plotPath(xs, ys, x0):
-#     plotFunc(x0)
-#     plt.plot(xs, ys, linestyle='--', marker='o', color='orange')
-#     plt.plot(xs[-1], ys[-1], 'ro')
+def plotPath(xs, ys, x0):
+    plotFunc(x0)
+    plt.plot(xs, ys, linestyle='--', marker='o', color='orange')
+    plt.plot(xs[-1], ys[-1], 'ro')
 
-#plt.show()
+plotFunc(x0)
+plt.show()
+
+
+def ArmijoLineSearch(f, xk, pk, gfk, phi0, alpha0, rho=0.5, c1=1e-4):
+    """Minimize over alpha, the function ``f(xₖ + αpₖ)``.
+    α > 0 is assumed to be a descent direction.
+    
+    Parameters
+    --------------------
+    f : callable
+        Function to be minimized.
+    xk : array
+        Current point.
+    pk : array
+        Search direction.
+    gfk : array
+        Gradient of `f` at point `xk`.
+    phi0 : float
+        Value of `f` at point `xk`.
+    alpha0 : scalar
+        Value of `alpha` at the start of the optimization.
+    rho : float, optional
+        Value of alpha shrinkage factor.
+    c1 : float, optional
+        Value to control stopping criterion.
+    
+    Returns
+    --------------------
+    alpha : scalar
+        Value of `alpha` at the end of the optimization.
+    phi : float
+        Value of `f` at the new point `x_{k+1}`.
+    """
+    derphi0 = np.dot(gfk, pk)
+    phi_a0 = f(xk + alpha0*pk)
+    
+    while not phi_a0 <= phi0 + c1*alpha0*derphi0:
+        alpha0 = alpha0 * rho
+        phi_a0 = f(xk + alpha0*pk)
+    
+    return alpha0, phi_a0
 
 
 def GradientDescentSimple(func, fprime, x0, alpha, tol=1e-5, max_iter=1000):
@@ -63,10 +103,17 @@ def GradientDescentSimple(func, fprime, x0, alpha, tol=1e-5, max_iter=1000):
     while gfk_norm > tol and num_iter < max_iter:
         # calculate new x, f(x), and -f'(x)
         pk = -gfk
-        fk = func(xk)
+        
+        #Without momentum term 1a
+        #fk = func(xk)
+        
+        #With momentum term 1b
+        alpha, fk = ArmijoLineSearch(func, xk, pk, gfk, fk, alpha0=alpha)
+        
         xk = xk + alpha * pk
         gfk = fprime(xk)
         gfk_norm = np.linalg.norm(gfk)
+        
         # increase number of steps by 1, save new x and f(x)
         num_iter += 1
         curve_x.append(xk)
@@ -85,8 +132,8 @@ xs, ys = GradientDescentSimple(func, fprime, x0, alpha=0.1)
 
 def plot(xs, ys):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-    x = np.arange(-10, 10, 1)
-    y = np.arange(-10, 10, 1)
+    x = np.arange(-10, 10, 0.025)
+    y = np.arange(-10, 10, 0.025)
     X, Y = np.meshgrid(x, y)
     Z = np.zeros(X.shape)
     mesh_size = range(len(X))
@@ -116,7 +163,7 @@ def plot(xs, ys):
         ylabel='Objective Function Value'
     )
     plt.tight_layout()
-    plt.show()
+    #plt.show()
 
-xs, ys = GradientDescentSimple(func, fprime, x0, 0.8)
+xs, ys = GradientDescentSimple(func, fprime, x0, 7)
 plot(xs, ys)
