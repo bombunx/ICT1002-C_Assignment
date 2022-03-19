@@ -8,17 +8,24 @@ from matplotlib.ticker import MaxNLocator
 from itertools import product
 from matplotlib import rcParams
 
-# Matya's function without momentum
 
 def func(x):
     dim = len(x)
-    y = 0.26 * (x[0] * x[0]+ x[1] * x[1]) - 0.48 *x[0] * x[1]
+    #1st test case ### Matya's function 
+    #y = 0.26 * (x[0] * x[0]+ x[1] * x[1]) - 0.48 *x[0] * x[1]
+    
+    #2nd test case ### Himmelblau's function 
+    y = (x[0] * x[0] + x[1] - 11) * (x[0] * x[0] + x[1] - 11)  + (x[0] + x[1] * x[1] - 7) * (x[0] + x[1] * x[1] - 7)
     return y
 
 def fprime(x):
-    return np.array([0.52 * x[0] - 0.48 * x[1], 0.52 * x[1] - 0.48 * x[0]])
+    #1st test case ### Matya's function 
+    #return np.array([0.52 * x[0] - 0.48 * x[1], 0.52 * x[1] - 0.48 * x[0]])
+    
+    #2nd test case ### Himmelblau's function 
+    return np.array([2 * (x[0] * x[0] + x[1] -11) * 2 * x[0] + 2 * (x[0] + x[1] * x[1] -7), 2 * (x[0] * x[0] + x[1] -11) + 2 * (x[0] + x[1] * x[1] -7) * 2 * x[1]])
 
-x0 = np.array([-10, -10])
+x0 = np.array([3,2])
     
 # def plotFunc(x0):
 #     x = np.arange(-10, 10, 0.025)
