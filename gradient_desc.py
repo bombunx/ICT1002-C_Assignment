@@ -20,33 +20,33 @@ def fprime(x):
 
 x0 = np.array([-10, -10])
     
-def plotFunc(x0):
-    x = np.arange(-10, 10, 0.025)
-    y = np.arange(-10, 10, 0.025)
-    X, Y = np.meshgrid(x, y)
-    Z = np.zeros(X.shape)
-    mesh_size = range(len(X))
-    for i, j in product(mesh_size, mesh_size):
-        x_coor = X[i][j]
-        y_coor = Y[i][j]
-        Z[i][j] = func(np.array([x_coor, y_coor]))
+# def plotFunc(x0):
+#     x = np.arange(-10, 10, 0.025)
+#     y = np.arange(-10, 10, 0.025)
+#     X, Y = np.meshgrid(x, y)
+#     Z = np.zeros(X.shape)
+#     mesh_size = range(len(X))
+#     for i, j in product(mesh_size, mesh_size):
+#         x_coor = X[i][j]
+#         y_coor = Y[i][j]
+#         Z[i][j] = func(np.array([x_coor, y_coor]))
 
-    fig = plt.figure(figsize=(6,6))
-    ax = fig.gca(projection='3d')
-    ax.set_title('Matya function')
-    ax.set_xlabel('$x_1$')
-    ax.set_ylabel('$x_2$')
-    ax.set_zlabel('$f(x_1, x_2)$')
-    ax.plot_surface(X, Y, Z, cmap='viridis')
-    plt.tight_layout()
+#     fig = plt.figure(figsize=(6,6))
+#     ax = fig.gca(projection='3d')
+#     ax.set_title('Matya function')
+#     ax.set_xlabel('$x_1$')
+#     ax.set_ylabel('$x_2$')
+#     ax.set_zlabel('$f(x_1, x_2)$')
+#     ax.plot_surface(X, Y, Z, cmap='viridis')
+#     plt.tight_layout()
 
-def plotPath(xs, ys, x0):
-    plotFunc(x0)
-    plt.plot(xs, ys, linestyle='--', marker='o', color='orange')
-    plt.plot(xs[-1], ys[-1], 'ro')
+# def plotPath(xs, ys, x0):
+#     plotFunc(x0)
+#     plt.plot(xs, ys, linestyle='--', marker='o', color='orange')
+#     plt.plot(xs[-1], ys[-1], 'ro')
 
-plotFunc(x0)
-plt.show()
+# plotFunc(x0)
+# plt.show()
 
 
 def ArmijoLineSearch(f, xk, pk, gfk, phi0, alpha0, rho=0.5, c1=1e-4):
@@ -91,43 +91,43 @@ def ArmijoLineSearch(f, xk, pk, gfk, phi0, alpha0, rho=0.5, c1=1e-4):
 
 def GradientDescentSimple(func, fprime, x0, alpha, tol=1e-5, max_iter=1000):
     # initialize x, f(x), and -f'(x)
-    xk = x0
-    fk = func(xk)
-    gfk = fprime(xk)
-    gfk_norm = np.linalg.norm(gfk)
+    xk = x0 #starting x values
+    fk = func(xk) # starting y values
+    gfk = fprime(xk) # gradient (downwards slope)
+    gfk_norm = np.linalg.norm(gfk) # absolute value of gradient
     # initialize number of steps, save x and f(x)
     num_iter = 0
-    curve_x = [xk]
+    curve_x = [xk] # curve_x and curve_y to store all the x and y axis
     curve_y = [fk]
     # take steps
-    while gfk_norm > tol and num_iter < max_iter:
+    while gfk_norm > tol and num_iter < max_iter: # while abs(gradient) > tolerance/threshold (self determined) and within counter of 1000
         # calculate new x, f(x), and -f'(x)
-        pk = -gfk
+        pk = -gfk # -ve gradient
         
         #Without momentum term 1a
-        #fk = func(xk)
+        fk = func(xk) # new y value
         
         #With momentum term 1b
-        alpha, fk = ArmijoLineSearch(func, xk, pk, gfk, fk, alpha0=alpha)
+        # alpha, fk = ArmijoLineSearch(func, xk, pk, gfk, fk, alpha0=alpha) # alpha determines the momentum of point x going downwards -> determines how big ur next step is
         
-        xk = xk + alpha * pk
-        gfk = fprime(xk)
-        gfk_norm = np.linalg.norm(gfk)
+        xk = xk + alpha * pk # new x value
+        gfk = fprime(xk) # new gradient
+        gfk_norm = np.linalg.norm(gfk) # new abs(gradient)
         
         # increase number of steps by 1, save new x and f(x)
         num_iter += 1
         curve_x.append(xk)
         curve_y.append(fk)
-        print('Iteration: {} \t y = {:.4f}, x = {}, gradient = {:.4f}'.format(num_iter, fk, xk, gfk_norm))
+        print('Iteration: {} \t y = {:.4f}, x = {}, gradient = {:.6f}'.format(num_iter, fk, xk, gfk_norm))
     # print results
     if num_iter == max_iter:
         print('\nGradient descent does not converge.')
     else:
         print('\nSolution: \t y = {:.4f}, x = {}'.format(fk, xk))
     
-    return np.array(curve_x), np.array(curve_y)
+    return np.array(curve_x), np.array(curve_y) # to be stored in txt file when doing in C
 
-xs, ys = GradientDescentSimple(func, fprime, x0, alpha=0.1)
+# xs, ys = GradientDescentSimple(func, fprime, x0, alpha=0.1)
 #plotPath(xs, ys, x0)
 
 def plot(xs, ys):
@@ -163,7 +163,7 @@ def plot(xs, ys):
         ylabel='Objective Function Value'
     )
     plt.tight_layout()
-    #plt.show()
+    plt.show()
 
 xs, ys = GradientDescentSimple(func, fprime, x0, 7)
 plot(xs, ys)
