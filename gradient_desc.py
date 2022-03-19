@@ -15,7 +15,14 @@ def func(x):
     #y = 0.26 * (x[0] * x[0]+ x[1] * x[1]) - 0.48 *x[0] * x[1]
     
     #2nd test case ### Himmelblau's function 
-    y = (x[0] * x[0] + x[1] - 11) * (x[0] * x[0] + x[1] - 11)  + (x[0] + x[1] * x[1] - 7) * (x[0] + x[1] * x[1] - 7)
+    #y = (x[0] * x[0] + x[1] - 11) * (x[0] * x[0] + x[1] - 11)  + (x[0] + x[1] * x[1] - 7) * (x[0] + x[1] * x[1] - 7)
+    
+    #3rd test case ### Beale's function 
+    p1= 1.5 - x[0] + x[0]*x[1];
+    p2= 2.25 - x[0] +x[0]*x[1]*x[1]; 
+    p3= 2.625 - x[0] +x[0]*x[1]*x[1]*x[1];   
+  
+    y = p1*p1 + p2*p2 + p3*p3;
     return y
 
 def fprime(x):
@@ -23,37 +30,45 @@ def fprime(x):
     #return np.array([0.52 * x[0] - 0.48 * x[1], 0.52 * x[1] - 0.48 * x[0]])
     
     #2nd test case ### Himmelblau's function 
-    return np.array([2 * (x[0] * x[0] + x[1] -11) * 2 * x[0] + 2 * (x[0] + x[1] * x[1] -7), 2 * (x[0] * x[0] + x[1] -11) + 2 * (x[0] + x[1] * x[1] -7) * 2 * x[1]])
+    #return np.array([2 * (x[0] * x[0] + x[1] -11) * 2 * x[0] + 2 * (x[0] + x[1] * x[1] -7), 2 * (x[0] * x[0] + x[1] -11) + 2 * (x[0] + x[1] * x[1] -7) * 2 * x[1]])
 
-x0 = np.array([3,2])
+    #3rd test case ### Beale's function
+    p1= 1.5 - x[0] + x[0] * x[1];
+    p2= 2.25 - x[0] + x[0] * x[1] * x[1]; 
+    p3= 2.625 - x[0] + x[0] * x[1]* x[1] * x[1]; 
+  
+    grad0 = 2 * p1 * (-1+x[1]) + 2 * p2 * (-1+x[1]*x[1])  + 2 * p3*(-1+x[1]*x[1]*x[1]); 
+    grad1 = 2*p1*x[0] +  2*p2*2*x[0]*x[1] + 2*p3*3*x[0]*x[1]*x[1];  
+    return np.array([grad0,grad1])
+x0 = np.array([1,1])
     
-# def plotFunc(x0):
-#     x = np.arange(-10, 10, 0.025)
-#     y = np.arange(-10, 10, 0.025)
-#     X, Y = np.meshgrid(x, y)
-#     Z = np.zeros(X.shape)
-#     mesh_size = range(len(X))
-#     for i, j in product(mesh_size, mesh_size):
-#         x_coor = X[i][j]
-#         y_coor = Y[i][j]
-#         Z[i][j] = func(np.array([x_coor, y_coor]))
+def plotFunc(x0):
+    x = np.arange(-4.5, 4.5, 0.025)
+    y = np.arange(-4.5, 4.5, 0.025)
+    X, Y = np.meshgrid(x, y)
+    Z = np.zeros(X.shape)
+    mesh_size = range(len(X))
+    for i, j in product(mesh_size, mesh_size):
+        x_coor = X[i][j]
+        y_coor = Y[i][j]
+        Z[i][j] = func(np.array([x_coor, y_coor]))
 
-#     fig = plt.figure(figsize=(6,6))
-#     ax = fig.gca(projection='3d')
-#     ax.set_title('Matya function')
-#     ax.set_xlabel('$x_1$')
-#     ax.set_ylabel('$x_2$')
-#     ax.set_zlabel('$f(x_1, x_2)$')
-#     ax.plot_surface(X, Y, Z, cmap='viridis')
-#     plt.tight_layout()
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.gca(projection='3d')
+    ax.set_title('Matya function')
+    ax.set_xlabel('$x_1$')
+    ax.set_ylabel('$x_2$')
+    ax.set_zlabel('$f(x_1, x_2)$')
+    ax.plot_surface(X, Y, Z, cmap='viridis')
+    plt.tight_layout()
 
-# def plotPath(xs, ys, x0):
-#     plotFunc(x0)
-#     plt.plot(xs, ys, linestyle='--', marker='o', color='orange')
-#     plt.plot(xs[-1], ys[-1], 'ro')
+def plotPath(xs, ys, x0):
+    plotFunc(x0)
+    plt.plot(xs, ys, linestyle='--', marker='o', color='orange')
+    plt.plot(xs[-1], ys[-1], 'ro')
 
-# plotFunc(x0)
-# plt.show()
+plotFunc(x0)
+#plt.show()
 
 
 def ArmijoLineSearch(f, xk, pk, gfk, phi0, alpha0, rho=0.5, c1=1e-4):
@@ -112,10 +127,10 @@ def GradientDescentSimple(func, fprime, x0, alpha, tol=1e-5, max_iter=1000):
         pk = -gfk # -ve gradient
         
         #Without momentum term 1a
-        fk = func(xk) # new y value
+        #fk = func(xk) # new y value
         
         #With momentum term 1b
-        # alpha, fk = ArmijoLineSearch(func, xk, pk, gfk, fk, alpha0=alpha) # alpha determines the momentum of point x going downwards -> determines how big ur next step is
+        alpha, fk = ArmijoLineSearch(func, xk, pk, gfk, fk, alpha0=alpha) # alpha determines the momentum of point x going downwards -> determines how big ur next step is
         
         xk = xk + alpha * pk # new x value
         gfk = fprime(xk) # new gradient
@@ -139,8 +154,8 @@ def GradientDescentSimple(func, fprime, x0, alpha, tol=1e-5, max_iter=1000):
 
 def plot(xs, ys):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-    x = np.arange(-10, 10, 0.025)
-    y = np.arange(-10, 10, 0.025)
+    x = np.arange(-4.5, 4.5, 0.025)
+    y = np.arange(-4.5, 4.5, 0.025)
     X, Y = np.meshgrid(x, y)
     Z = np.zeros(X.shape)
     mesh_size = range(len(X))
@@ -172,5 +187,8 @@ def plot(xs, ys):
     plt.tight_layout()
     plt.show()
 
-xs, ys = GradientDescentSimple(func, fprime, x0, 7)
+xs, ys = GradientDescentSimple(func, fprime, x0, 10000)
+# Matya: 7
+# Himmelblau : 0.01
+# Beale: 10000
 plot(xs, ys)
