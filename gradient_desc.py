@@ -40,11 +40,12 @@ def fprime(x):
     grad0 = 2 * p1 * (-1+x[1]) + 2 * p2 * (-1+x[1]*x[1])  + 2 * p3*(-1+x[1]*x[1]*x[1]); 
     grad1 = 2*p1*x[0] +  2*p2*2*x[0]*x[1] + 2*p3*3*x[0]*x[1]*x[1];  
     return np.array([grad0,grad1])
+
 x0 = np.array([1,1])
     
 def plotFunc(x0):
-    x = np.arange(-4.5, 4.5, 0.025)
-    y = np.arange(-4.5, 4.5, 0.025)
+    x = np.arange(-4.5, 4.5, 0.5)
+    y = np.arange(-4.5, 4.5, 0.5)
     X, Y = np.meshgrid(x, y)
     Z = np.zeros(X.shape)
     mesh_size = range(len(X))
@@ -128,7 +129,7 @@ def GradientDescentSimple(func, fprime, x0, alpha, tol=1e-5, max_iter=1000):
         
         #Without momentum term 1a
         #fk = func(xk) # new y value
-        
+         
         #With momentum term 1b
         alpha, fk = ArmijoLineSearch(func, xk, pk, gfk, fk, alpha0=alpha) # alpha determines the momentum of point x going downwards -> determines how big ur next step is
         
@@ -153,10 +154,10 @@ def GradientDescentSimple(func, fprime, x0, alpha, tol=1e-5, max_iter=1000):
 #plotPath(xs, ys, x0)
 
 def plot(xs, ys):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-    x = np.arange(-4.5, 4.5, 0.025)
-    y = np.arange(-4.5, 4.5, 0.025)
-    X, Y = np.meshgrid(x, y)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 10))
+    x = np.arange(-4.5, 4.5, 0.5)
+    y = np.arange(-4.5, 4.5, 0.5)
+    X, Y = np.meshgrid(x, y)    
     Z = np.zeros(X.shape)
     mesh_size = range(len(X))
     for i, j in product(mesh_size, mesh_size):
@@ -187,7 +188,7 @@ def plot(xs, ys):
     plt.tight_layout()
     plt.show()
 
-xs, ys = GradientDescentSimple(func, fprime, x0, 10000)
+xs, ys = GradientDescentSimple(func, fprime, x0, 1.5)
 # Matya: 7
 # Himmelblau : 0.01
 # Beale: 10000
