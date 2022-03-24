@@ -11,7 +11,7 @@ double valueonly_matya2d( int dim, double *x);
 double valueandderivatives_matya2d( int dim, double *x , double* grad, double *hessian_vecshaped);
 
 // Gradient Descent Functions
-double gradient_descent_simple(double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter);
+double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter);
 
 int main()
 {
@@ -40,7 +40,7 @@ int main()
     printf("Simple Gradient Descent \n");
     //printf("Set parameters \n");
     
-    gradient_descent_simple(function,grad,x,hessian,7,1e-5,1000);
+    gradient_descent_simple(dim,function,grad,x,hessian,7,1e-5,1000);
     free(x);
     free(grad);
     free(hessian);
@@ -184,29 +184,42 @@ double valueandderivatives_matya2d( int dim, double *x , double* grad, double *h
 }
 
 
-double gradient_descent_simple(double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter){
+double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter){
   
-  double norm_grad = sqrt(grad[0] * grad[0] + grad[1] * grad[1]);
+
+  double sum_grad_squared;
+  for (int counter = 0; counter < dim; counter++){
+    sum_grad_squared += (grad[counter] * grad[counter]);
+  }
+  double norm_grad = sqrt(sum_grad_squared);
   //printf("x-values: %f \t %f \n y-value: %f \n gradient: %f \n",x[0],x[1],function,norm_grad);
 
   int num_iter =0;
-  double *negative_grad = calloc (2, sizeof (double));
+  double *negative_grad = calloc (dim, sizeof (double));
   
   while (num_iter < max_iter){
-    negative_grad[0] = grad[0] * -1;
-    negative_grad[1] = grad[1] * -1;
+
+    for (int counter = 0; counter < dim; counter++){
+    negative_grad[counter] = grad[counter] * -1;
+    }
+
     // new y values
     function = valueandderivatives_matya2d(2,x,grad,hess);
   
     // new x values
-    x[0] = x[0] + (alpha * negative_grad[0]);
-    printf("%f\n",x[0]);
-    x[1] = x[1] + (alpha * negative_grad[1]);
-    printf("%f\n",x[1]);
+    for (int counter = 0; counter < dim; counter++){
+      x[counter] = x[counter] + (alpha * negative_grad[counter]);
+    }
 
-    norm_grad = sqrt(grad[0] * grad[0] + grad[1] * grad[1]);
+    sum_grad_squared = 0;
+    for (int counter = 0; counter < dim; counter++){
+      sum_grad_squared += (grad[counter] * grad[counter]);
+    }
+    norm_grad = sqrt(sum_grad_squared);
+
     num_iter++;
-    //printf("Iteration: %d \t Gradient: [%.4f,%.4f]",num_iter,grad[0],grad[1]);
+
+    // Need a loop to output all the X values
     printf("Iteration: %d \t y = %.6f \t x = %.6f \t %.6f \t gradient: %.6f \n",num_iter,function,x[0],x[1],norm_grad);
     if (norm_grad < threshold){
       break;
@@ -217,6 +230,7 @@ double gradient_descent_simple(double function, double *grad, double *x, double 
   if (num_iter == max_iter){
     printf("Gradient descent does not converge.\n");
   }
+
   else{
     printf("Solution: y = %f \t x = [%f,%f]\n",function,x[0],x[1]);
   }
