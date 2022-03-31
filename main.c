@@ -3,6 +3,8 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
+#include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_linalg.h>
 
 
 // Function Functions
@@ -27,6 +29,7 @@ double valueonly_coville4d( int dim, double *x){
     double term6 = 19.8*(x2-1)*(x4-1);
 
     double y = term1 + term2 + term3 + term4 + term5 + term6;
+  return y;
 }
 double valueandderivatives_coville4d( int dim, double *x , double* grad, double *hessian_vecshaped){
 
@@ -37,21 +40,19 @@ double valueandderivatives_coville4d( int dim, double *x , double* grad, double 
     double x3 = x[2];
     double x4 = x[3];
 
-    double term1 = 100 * (x1 * x1-x2) * (x1 * x1-x2);
-    double term2 = (x1-1) * (x1-1);
-    double term3 = (x3-1) * (x3-1);
-    double term4 = 90 * (x3 * x3 - x4) * (x3 * x3 - x4);
-    double term5 = 10.1 * ((x2-1) * (x2-1) + (x4-1)* (x4-1));
-    double term6 = 19.8*(x2-1)*(x4-1);
-
     grad[0] = 100 * 2 * (x1 * x1-x2) * (x2) + 2 * (x1-1);
     grad[1] = 220.2 * x2 + 19.8 * x4 - 200 * x1 * x1 - 40;
     grad[2] = 2 * (x3-1) + 360 * (x3 * x3 - x4);
     grad[3] = 200.2 * x4 + 19.8 * x2 - 180 * x3 * x3 - 40;
+
+    return y;
 }
+
+
 
 // Gradient Descent Functions
 double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter);
+double gradient_descent_newton(int dim, double function, double *grad, double*x, double *hess, double threshold, double epsilon, int max_iter);
 
 int main()
 {
@@ -80,12 +81,13 @@ int main()
 
     
     // initialise starting point
-    srand (5); // seed random number generator
-    for(int i =0;i < dim; i++){
-      x[i] = max_range * ((1.0 * rand()) / RAND_MAX) + min_range;
-    }
-
-    function = valueandderivatives_matya2d(dim,x,grad,hessian);
+    // srand (5); // seed random number generator
+    // for(int i =0;i < dim; i++){
+    //   x[i] = max_range * ((1.0 * rand()) / RAND_MAX) + min_range;
+    // }
+    x[0] = 3;
+    x[1] = 0;
+    function = valueandderivatives_beale2d(dim,x,grad,hessian);
     // Parameters for Matya2D Function -- Gradient Descent Simple
     // dim = 4, range = [0.0,1.0], seed = 5, alpha = 0.5, threshold = 1e-5, max_iter = 1000
 
@@ -94,7 +96,7 @@ int main()
     // Parameters for Colville4D Function -- Gradient Descent Simple
     // dim = 4, range = [1.001,1.005], seed = 10, alpha = 0.001075, threshold = 1e-5, max_iter = 10000
     
-    gradient_descent_simple(dim,function,grad,x,hessian,0.5,1e-5,1000);
+    gradient_descent_simple(dim,function,grad,x,hessian,0.01,1e-5,1000);
     free(x);
     free(grad);
     free(hessian);
@@ -108,6 +110,25 @@ int main()
   else if (input == 2){
     // Gradient Descent with Newton's Method
     printf("Gradient Descent with Newton's Method \n");
+    // Simple Gradient Descent
+    printf("Simple Gradient Descent \n");
+    printf("Set parameters (dim, alpha): \n"); // dim, alpha
+    printf("Max range, Min range: \n"); // max_range, min_range
+
+    
+    // initialise starting point
+    // srand (5); // seed random number generator
+    // for(int i =0;i < dim; i++){
+    //   x[i] = max_range * ((1.0 * rand()) / RAND_MAX) + min_range;
+    // }
+    x[0] = 2;
+    x[1] = 0;
+    function = valueandderivatives_beale2d(dim,x,grad,hessian);
+    gradient_descent_newton(dim,function,grad,x,hessian,1e-10,1e-7,1000);
+
+    free(x);
+    free(grad);
+    free(hessian);
   }
   
   //plotovergrid2d( "./griddata.txt");
@@ -220,8 +241,6 @@ double valueandderivatives_matya2d( int dim, double *x , double* grad, double *h
   
   double ret  = valueonly_matya2d(dim, x);
   
-  double p1;
-  
   
   //gradient
 
@@ -238,46 +257,62 @@ double valueandderivatives_matya2d( int dim, double *x , double* grad, double *h
 }
 
 
+
+
+
 double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter){
-  
 
   double sum_grad_squared;
+  double norm_grad;
+  //printf("x-values: %f \t %f \t %f \t %f \n y-value: %f \n gradient: %f \n",x[0],x[1],x[2],x[3],function,norm_grad);
+  sum_grad_squared = 0;
   for (int counter = 0; counter < dim; counter++){
     sum_grad_squared += (grad[counter] * grad[counter]);
   }
-  double norm_grad = sqrt(sum_grad_squared);
-  //printf("x-values: %f \t %f \t %f \t %f \n y-value: %f \n gradient: %f \n",x[0],x[1],x[2],x[3],function,norm_grad);
+  norm_grad = sqrt(sum_grad_squared);  
+
 
   int num_iter =0;
-  double *negative_grad = calloc (dim, sizeof (double));
   bool success = true;
 
   FILE *out_file; // output file
   out_file = fopen ("output.txt", "w");
 
-  while (num_iter < max_iter){
+  printf("Iteration: %d \t y = %.6f \t",num_iter,function);
+  fprintf(out_file,"Iteration: %d \t y = %.6f \t",num_iter,function);
 
-    for (int counter = 0; counter < dim; counter++){
-    negative_grad[counter] = grad[counter] * -1;
+  printf("x =[");
+  fprintf(out_file,"x =[");
+
+  for (int i = 0; i < dim;i++){
+    if (i != (dim-1)){
+      printf(" %.6f, ",x[i]);
+      fprintf(out_file," %.6f, ",x[i]);
     }
-
-    // new y values
-    function = valueandderivatives_matya2d(2,x,grad,hess);
-    // function=valueandderivatives_coville4d(4,x,grad,hess);
-
+    else{
+      printf(" %.6f ]\t",x[i]);
+      fprintf(out_file," %.6f ]\n",x[i]);
+    }
+  }
+  printf("vector = %.6f\n",norm_grad);  
+  
+  while (num_iter < max_iter){
+    
     // new x values
     for (int counter = 0; counter < dim; counter++){
-      x[counter] = x[counter] + (alpha * negative_grad[counter]);
+      x[counter] = x[counter] + (alpha * grad[counter] * -1);
     }
+    // new y values
+    function = valueandderivatives_beale2d(2,x,grad,hess);
+    // function=valueandderivatives_coville4d(4,x,grad,hess);
+    
+    num_iter++;
 
     sum_grad_squared = 0;
     for (int counter = 0; counter < dim; counter++){
-      sum_grad_squared += (grad[counter] * grad[counter]);
+    sum_grad_squared += (grad[counter] * grad[counter]);
     }
     norm_grad = sqrt(sum_grad_squared);
-
-    num_iter++;
-
     //Loop to output results at each iteration and save to file at the same time
 
     printf("Iteration: %d \t y = %.6f \t",num_iter,function);
@@ -297,7 +332,6 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
       }
     }
     printf("vector = %.6f\n",norm_grad);
-
 
     if (norm_grad < threshold) {
       break;
@@ -333,6 +367,125 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
         printf(" %.6f ]\t",x[i]);
       }
     }
-
   }
+  return norm_grad;
+}
+
+double gradient_descent_newton(int dim, double function, double *grad, double*x, double *hess, double threshold, double epsilon, int max_iter){
+
+  
+  double sum_grad_squared;
+  for (int counter = 0; counter < dim; counter++){
+    sum_grad_squared += (grad[counter] * grad[counter]);
+  }
+  double norm_grad = sqrt(sum_grad_squared); 
+
+  int num_iter =0;
+  double *negative_grad = calloc (dim, sizeof (double));
+  bool success = true;
+
+  double *A = calloc (dim * dim, sizeof(double));
+
+  gsl_matrix *gsl_hessian = gsl_matrix_calloc(dim,dim);
+  gsl_vector *gsl_grad = gsl_vector_calloc(dim);
+  gsl_vector *gsl_x = gsl_vector_calloc(dim);
+  gsl_matrix *mA = gsl_matrix_calloc(dim,dim);
+  gsl_vector *temp = gsl_vector_calloc(dim);
+
+  FILE *out_file; // output file
+  out_file = fopen ("output.txt", "w");
+
+  while (num_iter < max_iter){
+
+    gsl_matrix_view gsl_hessian_view = gsl_matrix_view_array(hess,dim,dim);
+    gsl_hessian = &(gsl_hessian_view.matrix);
+
+    gsl_vector_view gsl_grad_view = gsl_vector_view_array(negative_grad,dim);
+    gsl_grad = &(gsl_grad_view.vector);
+
+    gsl_vector_view gsl_x_view = gsl_vector_view_array(x,dim);
+    gsl_x = &(gsl_x_view.vector);
+
+    gsl_matrix_view mA_view = gsl_matrix_view_array(A,dim,dim);
+    mA = &(mA_view.matrix);
+
+    gsl_matrix_set_identity(mA);
+    gsl_matrix_scale(mA,epsilon);
+    gsl_matrix_add(mA,gsl_hessian);
+
+
+    gsl_blas_dgemv(CblasNoTrans,1.0,mA,gsl_x,0.0,temp);
+    gsl_vector_add(temp,gsl_grad);
+    gsl_linalg_HH_solve(mA,temp,gsl_x);
+
+    for (int i = 0; i < dim; i++) {
+      x[i] = gsl_vector_get(gsl_x,i); // new x values
+    }
+    function = valueandderivatives_beale2d(dim,x,grad,hess);    
+    num_iter++;
+
+
+    for (int counter = 0; counter < dim; counter++){
+      negative_grad[counter] = grad[counter] * -1;
+    }
+
+    sum_grad_squared = 0;
+    for (int counter = 0; counter < dim; counter++){
+    sum_grad_squared += (grad[counter] * grad[counter]);
+    }
+    norm_grad = sqrt(sum_grad_squared);
+
+    printf("Iteration: %d \t y = %.6f \t",num_iter,function);
+    fprintf(out_file,"Iteration: %d \t y = %.6f \t",num_iter,function);
+
+    printf("x =[");
+    fprintf(out_file,"x =[");
+
+    for (int i = 0; i < dim;i++){
+      if (i != (dim-1)){
+        printf(" %.6f, ",x[i]);
+        fprintf(out_file," %.6f, ",x[i]);
+      }
+      else{
+        printf(" %.6f ]\t",x[i]);
+        fprintf(out_file," %.6f ]\n",x[i]);
+      }
+    }
+    printf("vector = %.6f\n",norm_grad);
+
+    if (norm_grad < threshold) {
+      break;
+    }
+
+    if ((isnan(norm_grad) || (isinf(norm_grad)))){
+      success = false;
+      break;
+    }
+  }
+  fclose(out_file); // Close the output file after loop ends
+  // print results
+  if (success == false || num_iter == max_iter){
+    printf("Gradient descent does not converge.\n");
+    printf("%.6f",norm_grad);
+
+    FILE *out_file; // If it does not converge, rewrite the file to show no output
+    out_file = fopen ("output.txt", "w");
+    fprintf(out_file,"Gradient descent does not converge.\n");
+    fclose(out_file);
+  }
+
+  else{
+    // Solution
+    printf("Solution: y = %f \t ",function);
+    printf("x =[");
+    for (int i = 0; i < dim;i++){
+      if (i != (dim-1)){
+        printf(" %.6f, ",x[i]);
+      }
+      else{
+        printf(" %.6f ]\t",x[i]);
+      }
+    }
+  }
+  return norm_grad;
 }
