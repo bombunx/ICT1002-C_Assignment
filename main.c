@@ -469,7 +469,7 @@ double gradient_descent_newton(int dim, double function, double *grad, double*x,
     printf("%.6f",norm_grad);
 
     FILE *out_file; // If it does not converge, rewrite the file to show no output
-    out_file = fopen ("output.txt", "w");
+    out_file = fopen ("output.csv", "w");
     fprintf(out_file,"Gradient descent does not converge.\n");
     fclose(out_file);
   }
