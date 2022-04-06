@@ -58,9 +58,21 @@ int main()
 {
   // User input
   int input;
-  int dim = 2;
-  double max_range = 10;
-  double min_range = -10;
+  // int dim = 2;
+  // double max_range = 10;
+  // double min_range = -10;
+
+  int dim;
+  double max_range;
+  double min_range;
+  printf("Enter dimensions: ");
+  scanf("%d", &dim);
+
+  printf("Enter max range: ");
+  scanf("%lf", &max_range);
+
+  printf("Enter min range:");
+  scanf("%lf", &min_range);
 
   double * x = malloc (dim * sizeof (double));
   double * grad = calloc (dim, sizeof (double));
@@ -76,8 +88,15 @@ int main()
   if (input == 0){
     // Simple Gradient Descent
     printf("Simple Gradient Descent \n");
-    printf("Set parameters (dim, alpha): \n"); // dim, alpha
-    printf("Max range, Min range: \n"); // max_range, min_range
+    // printf("Set parameters (dim, alpha): \n"); // dim, alpha
+    // printf("Max range, Min range: \n"); // max_range, min_range
+
+    double alpha;
+
+    printf("Enter alpha: ");
+    scanf("%lf", &alpha);
+
+    printf("dim is %d, alpha is %lf, max range is %lf, min range is %lf", dim, alpha, max_range, min_range);
 
     
     // initialise starting point
@@ -96,7 +115,8 @@ int main()
     // Parameters for Colville4D Function -- Gradient Descent Simple
     // dim = 4, range = [1.001,1.005], seed = 10, alpha = 0.001075, threshold = 1e-5, max_iter = 10000
     
-    gradient_descent_simple(dim,function,grad,x,hessian,0.01,1e-5,1000);
+    // gradient_descent_simple(dim,function,grad,x,hessian,0.0175,1e-5,1000);
+    gradient_descent_simple(dim,function,grad,x,hessian,alpha,1e-5,1000);
     free(x);
     free(grad);
     free(hessian);
@@ -112,8 +132,15 @@ int main()
     printf("Gradient Descent with Newton's Method \n");
     // Simple Gradient Descent
     printf("Simple Gradient Descent \n");
-    printf("Set parameters (dim, alpha): \n"); // dim, alpha
-    printf("Max range, Min range: \n"); // max_range, min_range
+    // printf("Set parameters (dim, alpha): \n"); // dim, alpha
+    // printf("Max range, Min range: \n"); // max_range, min_range
+
+    double threshold;
+
+    printf("Enter threshold: ");
+    scanf("%lf", &threshold);
+
+    printf("dim is %d, threshold is %lf, max range is %lf, min range is %lf", dim, threshold, max_range, min_range);
 
     
     // initialise starting point
@@ -124,7 +151,8 @@ int main()
     x[0] = 2;
     x[1] = 0;
     function = valueandderivatives_beale2d(dim,x,grad,hessian);
-    gradient_descent_newton(dim,function,grad,x,hessian,1e-10,1e-7,1000);
+    // gradient_descent_newton(dim,function,grad,x,hessian,1e-10,1e-7,1000);
+    gradient_descent_newton(dim,function,grad,x,hessian,threshold,1e-7,1000);
 
     free(x);
     free(grad);
