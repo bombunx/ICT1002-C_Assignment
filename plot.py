@@ -9,33 +9,59 @@ temp_x = []
 curve_x = []
 curve_y = []
 
-def func(x):
-    dim = len(x)
-    #1st test case ### Matya's function 
-    #y = 0.26 * (x[0] * x[0]+ x[1] * x[1]) - 0.48 *x[0] * x[1]
-    
-    #2nd test case ### Himmelblau's function 
-    #y = (x[0] * x[0] + x[1] - 11) * (x[0] * x[0] + x[1] - 11)  + (x[0] + x[1] * x[1] - 7) * (x[0] + x[1] * x[1] - 7)
-    
-    #3rd test case ### Beale's function 
-    p1= 1.5 - x[0] + x[0]*x[1];
-    p2= 2.25 - x[0] +x[0]*x[1]*x[1]; 
-    p3= 2.625 - x[0] +x[0]*x[1]*x[1]*x[1];   
-  
-    y = p1*p1 + p2*p2 + p3*p3;
-    return y
+x_1 = []
+x_2 = []
+y = []
+z = []
+
+file = open('funcSurface.txt', 'r')
+num_lines = sum(1 for line in open('funcSurface.txt', 'r'))
+
+content = file.readlines()
+
+#  get x_1 values
+for index in range(len(content[0])):
+    if content[0][index] == '[':
+        index_start = index + 1
+    if content[0][index] == "]":
+        index_end = index - 1
+        x1 = content[0][index_start:index_end].split(" ")
+        
+for item in x1:
+    x_1.append(float(item))
+x_1 = np.array(x_1)
+
+#  get x_2 values
+for index in range(len(content[1])):
+    if content[1][index] == '[':
+        index_start = index + 1
+    if content[1][index] == "]":
+        index_end = index - 1
+        x2 = content[1][index_start:index_end].split(" ")
+        
+for item in x2:
+    x_2.append(float(item))
+x_2 = np.array(x_2)
+
+#  get y values
+for curr_line in range(num_lines-2): 
+    for index in range(len(content[curr_line+2])): # start from 3rd line (y = [...])
+        if content[curr_line+2][index] == '[':
+            index_start = index + 1
+        if content[curr_line+2][index] == "]":
+            index_end = index - 1
+            y0 = content[curr_line+2][index_start:index_end].split(" ")
+            temp_y = []
+            for item in y0:
+                temp_y.append(float(item))
+            y = np.array(temp_y)
+            z.append(y) 
+z = np.array(z)
+
 
 def plot(xs, ys):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 10))
-    x = np.arange(-4.5, 4.5, 0.5)
-    y = np.arange(-4.5, 4.5, 0.5)
-    X, Y = np.meshgrid(x, y)    
-    Z = np.zeros(X.shape)
-    mesh_size = range(len(X))
-    for i, j in product(mesh_size, mesh_size):
-        x_coor = X[i][j]
-        y_coor = Y[i][j]
-        Z[i][j] = func(np.array([x_coor, y_coor]))
+    X, Y = np.meshgrid(x_1, x_2)    
     plt.suptitle('Gradient Descent Method')
 
     ax1.plot(xs[:,0], xs[:,1], linestyle='--', marker='o', color='orange')
@@ -45,7 +71,7 @@ def plot(xs, ys):
         xlabel='x1',
         ylabel='x2'
     )
-    CS = ax1.contour(X,Y,Z)
+    CS = ax1.contour(X,Y,z)
     ax1.clabel(CS, fontsize='smaller', fmt='%1.2f')
     ax1.axis('square')
 
@@ -60,6 +86,7 @@ def plot(xs, ys):
     plt.tight_layout()
     plt.show()
 
+
 with open('output.csv') as file:
     content = file.readlines()
 
@@ -68,7 +95,7 @@ for item in content:
         # store y values in curve_y
         if char == "y":
             index = item.index(char)
-            curve_y.append(item[index+4:index+12])
+            curve_y.append(float(item[index+4:index+12]))
         # get x values from output file
         if char == "x":
             index = item.index(char)
@@ -82,5 +109,6 @@ for item in temp_x:
 
 curve_x = np.array(curve_x)
 curve_y = np.array(curve_y)
+
 
 plot(curve_x, curve_y)

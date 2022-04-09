@@ -14,6 +14,8 @@ double valueandderivatives_beale2d( int dim, double *x , double* grad, double *h
 double valueonly_matya2d( int dim, double *x);
 double valueandderivatives_matya2d( int dim, double *x , double* grad, double *hessian_vecshaped);
 
+// Function surface 
+void func_surface_plot(int dim, double* grad, double *hessian_vecshaped, const double max_range, const double min_range);
 
 double valueonly_coville4d( int dim, double *x){
     double x1 = x[0];
@@ -117,6 +119,7 @@ int main()
     
     // gradient_descent_simple(dim,function,grad,x,hessian,0.0175,1e-5,1000);
     gradient_descent_simple(dim,function,grad,x,hessian,alpha,1e-5,1000);
+    func_surface_plot(dim, grad, hessian, max_range, min_range);
     free(x);
     free(grad);
     free(hessian);
@@ -153,7 +156,7 @@ int main()
     function = valueandderivatives_beale2d(dim,x,grad,hessian);
     // gradient_descent_newton(dim,function,grad,x,hessian,1e-10,1e-7,1000);
     gradient_descent_newton(dim,function,grad,x,hessian,threshold,1e-7,1000);
-
+    func_surface_plot(dim, grad, hessian, max_range, min_range);
     free(x);
     free(grad);
     free(hessian);
@@ -285,6 +288,48 @@ double valueandderivatives_matya2d( int dim, double *x , double* grad, double *h
 }
 
 
+void func_surface_plot(int dim, double* grad, double *hessian_vecshaped, const double max_range, const double min_range){
+  double * x = malloc (dim * sizeof (double));
+  double function;
+
+  FILE *out_file; // output file
+  out_file = fopen ("funcSurface.txt", "w");
+
+  // x[0] = min_range;
+  // x[1] = max_range;
+  // function = valueandderivatives_beale2d(dim,x,grad,hessian_vecshaped);
+
+  // x_1 value
+  fprintf(out_file,"x_1 = [");
+
+  for (double i = min_range; i<max_range; i+=0.5) {
+    fprintf(out_file,"%.6f ", i);
+  }
+  fprintf(out_file,"]\n");
+
+  // x_2 value
+  fprintf(out_file,"x_2 = [");
+
+  for (double i = min_range; i<max_range; i+=0.5) {
+    fprintf(out_file,"%.6f ", i);
+  }
+  fprintf(out_file,"]\n");
+
+  // func / y value
+
+  for (double i = min_range; i<max_range; i+=0.5) {
+    x[1] = i;
+    fprintf(out_file,"y = [");
+    for (double j = min_range; j<max_range; j+=0.5){
+      x[0] = j;
+      function = valueandderivatives_beale2d(dim,x,grad,hessian_vecshaped);
+      fprintf(out_file,"%.6f ", function);
+    }
+    fprintf(out_file,"]\n");
+  }
+  
+  fclose(out_file); // Close the output file after loop ends
+}
 
 
 
@@ -341,8 +386,8 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
     sum_grad_squared += (grad[counter] * grad[counter]);
     }
     norm_grad = sqrt(sum_grad_squared);
-    //Loop to output results at each iteration and save to file at the same time
 
+    //Loop to output results at each iteration and save to file at the same time
     printf("Iteration: %d \t y = %.6f \t",num_iter,function);
     fprintf(out_file,"Iteration: %d \t y = %.6f \t",num_iter,function);
 
@@ -372,6 +417,7 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
   }
 
   fclose(out_file); // Close the output file after loop ends
+
   // print results
   if (success == false || num_iter == max_iter){
     printf("Gradient descent does not converge.\n");
@@ -491,6 +537,7 @@ double gradient_descent_newton(int dim, double function, double *grad, double*x,
     }
   }
   fclose(out_file); // Close the output file after loop ends
+
   // print results
   if (success == false || num_iter == max_iter){
     printf("Gradient descent does not converge.\n");
