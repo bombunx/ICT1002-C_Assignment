@@ -54,6 +54,7 @@ double valueandderivatives_coville4d( int dim, double *x , double* grad, double 
 
 // Gradient Descent Functions
 double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter);
+double gradient_descent_armijo(int dim, double function, double *grad, double *x, double *hess, double alpha,  double momentum, double threshold, int max_iter);
 double gradient_descent_newton(int dim, double function, double *grad, double*x, double *hess, double threshold, double epsilon, int max_iter);
 
 int main()
@@ -128,6 +129,19 @@ int main()
   else if (input == 1){
     // Momentum Gradient Descent
     printf("Momentum Gradient Descent \n");
+    double alpha;
+    double momentum;
+
+    printf("Enter alpha: ");
+    scanf("%lf", &alpha);
+
+    printf("Enter momentum: ");
+    scanf("%lf", &momentum);
+
+    x[0] = 3;
+    x[1] = 3;
+    function = valueandderivatives_matya2d(dim,x,grad,hessian);
+    gradient_descent_armijo(dim,function,grad,x,hessian,alpha,momentum,1e-5,1000); 
   }
 
   else if (input == 2){
@@ -444,6 +458,104 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
   }
   return norm_grad;
 }
+
+double gradient_descent_armijo(int dim, double function, double *grad, double *x, double *hess, double alpha, double momentum, double threshold, int max_iter){
+{
+  double sum_grad_squared;
+  double norm_grad;
+  double *negative_grad = calloc (dim, sizeof (double));
+
+  double *change = calloc(dim, sizeof(double));
+
+  double *new_change = calloc(dim, sizeof(double));
+
+
+  //printf("x-values: %f \t %f \t %f \t %f \n y-value: %f \n gradient: %f \n",x[0],x[1],x[2],x[3],function,norm_grad);
+  sum_grad_squared = 0;
+  for (int counter = 0; counter < dim; counter++){
+    sum_grad_squared += (grad[counter] * grad[counter]);
+  }
+  norm_grad = sqrt(sum_grad_squared);  
+
+
+  int num_iter =0;
+  bool success = true;
+
+  FILE *out_file; // output file
+  out_file = fopen ("output.txt", "w");
+
+  printf("Iteration: %d \t y = %.6f \t",num_iter,function);
+  fprintf(out_file,"Iteration: %d \t y = %.6f \t",num_iter,function);
+
+  printf("x =[");
+  fprintf(out_file,"x =[");
+
+  for (int i = 0; i < dim;i++){
+    if (i != (dim-1)){
+      printf(" %.6f, ",x[i]);
+      fprintf(out_file," %.6f, ",x[i]);
+    }
+    else{
+      printf(" %.6f ]\t",x[i]);
+      fprintf(out_file," %.6f ]\n",x[i]);
+    }
+  }
+  printf("vector = %.6f\n",norm_grad);  
+  
+  while (num_iter < max_iter){
+    
+    for (int i=0; i <dim;i++){
+      new_change[i] = alpha * grad[i] + momentum * change[i];
+    }
+    
+
+    for (int counter = 0; counter < dim; counter++){
+      x[counter] = x[counter] - new_change[counter];
+    }
+
+    change = new_change;
+    function = valueandderivatives_matya2d(dim,x,grad,hess);
+
+    num_iter++;
+
+    sum_grad_squared = 0;
+    for (int counter = 0; counter < dim; counter++){
+    sum_grad_squared += (grad[counter] * grad[counter]);
+    }
+    norm_grad = sqrt(sum_grad_squared);
+
+    printf("Iteration: %d \t y = %.6f \t",num_iter,function);
+    fprintf(out_file,"Iteration: %d \t y = %.6f \t",num_iter,function);
+
+    printf("x =[");
+    fprintf(out_file,"x =[");
+
+    for (int i = 0; i < dim;i++){
+      if (i != (dim-1)){
+        printf(" %.6f, ",x[i]);
+        fprintf(out_file," %.6f, ",x[i]);
+      }
+      else{
+        printf(" %.6f ]\t",x[i]);
+        fprintf(out_file," %.6f ]\n",x[i]);
+      }
+    }
+    printf("vector = %.6f\n",norm_grad);
+
+    if (norm_grad < threshold) {
+      break;
+    }
+
+    if (isnan(norm_grad) || (isinf(norm_grad))){
+      success = false;
+      break;
+    }
+  }
+}
+}
+
+
+
 
 double gradient_descent_newton(int dim, double function, double *grad, double*x, double *hess, double threshold, double epsilon, int max_iter){
 
