@@ -99,7 +99,7 @@ int main()
     printf("Enter alpha: ");
     scanf("%lf", &alpha);
 
-    printf("dim is %d, alpha is %lf, max range is %lf, min range is %lf", dim, alpha, max_range, min_range);
+    printf("dim is %d, alpha is %lf, max range is %lf, min range is %lf \n", dim, alpha, max_range, min_range);
 
     
     // initialise starting point
@@ -157,7 +157,7 @@ int main()
     printf("Enter threshold: ");
     scanf("%lf", &threshold);
 
-    printf("dim is %d, threshold is %lf, max range is %lf, min range is %lf", dim, threshold, max_range, min_range);
+    printf("dim is %d, threshold is %lf, max range is %lf, min range is %lf \n", dim, threshold, max_range, min_range);
 
     
     // initialise starting point
@@ -350,13 +350,13 @@ void func_surface_plot(int dim, double* grad, double *hessian_vecshaped, const d
 double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter){
 
   double sum_grad_squared;
-  double norm_grad;
-  //printf("x-values: %f \t %f \t %f \t %f \n y-value: %f \n gradient: %f \n",x[0],x[1],x[2],x[3],function,norm_grad);
+  double effective_vector;
+  //printf("x-values: %f \t %f \t %f \t %f \n y-value: %f \n gradient: %f \n",x[0],x[1],x[2],x[3],function,effective_vector);
   sum_grad_squared = 0;
   for (int counter = 0; counter < dim; counter++){
     sum_grad_squared += (grad[counter] * grad[counter]);
   }
-  norm_grad = sqrt(sum_grad_squared);  
+  effective_vector = sqrt(sum_grad_squared);  
 
 
   int num_iter =0;
@@ -381,7 +381,7 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
       fprintf(out_file," %.6f ]\n",x[i]);
     }
   }
-  printf("vector = %.6f\n",norm_grad);  
+  printf("vector = %.6f\n",effective_vector);  
   
   while (num_iter < max_iter){
     
@@ -399,7 +399,7 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
     for (int counter = 0; counter < dim; counter++){
     sum_grad_squared += (grad[counter] * grad[counter]);
     }
-    norm_grad = sqrt(sum_grad_squared);
+    effective_vector = sqrt(sum_grad_squared);
 
     //Loop to output results at each iteration and save to file at the same time
     printf("Iteration: %d \t y = %.6f \t",num_iter,function);
@@ -418,13 +418,13 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
         fprintf(out_file," %.6f ]\n",x[i]);
       }
     }
-    printf("vector = %.6f\n",norm_grad);
+    printf("vector = %.6f\n",effective_vector);
 
-    if (norm_grad < threshold) {
+    if (effective_vector < threshold) {
       break;
     }
 
-    if ((isnan(norm_grad) || (isinf(norm_grad)))){
+    if ((isnan(effective_vector) || (isinf(effective_vector)))){
       success = false;
       break;
     }
@@ -435,7 +435,7 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
   // print results
   if (success == false || num_iter == max_iter){
     printf("Gradient descent does not converge.\n");
-    printf("%.6f",norm_grad);
+    printf("%.6f",effective_vector);
 
     FILE *out_file; // If it does not converge, rewrite the file to show no output
     out_file = fopen ("output.txt", "w");
@@ -456,13 +456,13 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
       }
     }
   }
-  return norm_grad;
+  return effective_vector;
 }
 
 double gradient_descent_armijo(int dim, double function, double *grad, double *x, double *hess, double alpha, double momentum, double threshold, int max_iter){
 {
   double sum_grad_squared;
-  double norm_grad;
+  double effective_vector;
   double *negative_grad = calloc (dim, sizeof (double));
 
   double *change = calloc(dim, sizeof(double));
@@ -470,12 +470,12 @@ double gradient_descent_armijo(int dim, double function, double *grad, double *x
   double *new_change = calloc(dim, sizeof(double));
 
 
-  //printf("x-values: %f \t %f \t %f \t %f \n y-value: %f \n gradient: %f \n",x[0],x[1],x[2],x[3],function,norm_grad);
+  //printf("x-values: %f \t %f \t %f \t %f \n y-value: %f \n gradient: %f \n",x[0],x[1],x[2],x[3],function,effective_vector);
   sum_grad_squared = 0;
   for (int counter = 0; counter < dim; counter++){
     sum_grad_squared += (grad[counter] * grad[counter]);
   }
-  norm_grad = sqrt(sum_grad_squared);  
+  effective_vector = sqrt(sum_grad_squared);  
 
 
   int num_iter =0;
@@ -500,7 +500,7 @@ double gradient_descent_armijo(int dim, double function, double *grad, double *x
       fprintf(out_file," %.6f ]\n",x[i]);
     }
   }
-  printf("vector = %.6f\n",norm_grad);  
+  printf("vector = %.6f\n",effective_vector);  
   
   while (num_iter < max_iter){
     
@@ -522,7 +522,7 @@ double gradient_descent_armijo(int dim, double function, double *grad, double *x
     for (int counter = 0; counter < dim; counter++){
     sum_grad_squared += (grad[counter] * grad[counter]);
     }
-    norm_grad = sqrt(sum_grad_squared);
+    effective_vector = sqrt(sum_grad_squared);
 
     printf("Iteration: %d \t y = %.6f \t",num_iter,function);
     fprintf(out_file,"Iteration: %d \t y = %.6f \t",num_iter,function);
@@ -540,13 +540,13 @@ double gradient_descent_armijo(int dim, double function, double *grad, double *x
         fprintf(out_file," %.6f ]\n",x[i]);
       }
     }
-    printf("vector = %.6f\n",norm_grad);
+    printf("vector = %.6f\n",effective_vector);
 
-    if (norm_grad < threshold) {
+    if (effective_vector < threshold) {
       break;
     }
 
-    if (isnan(norm_grad) || (isinf(norm_grad))){
+    if (isnan(effective_vector) || (isinf(effective_vector))){
       success = false;
       break;
     }
@@ -564,7 +564,7 @@ double gradient_descent_newton(int dim, double function, double *grad, double*x,
   for (int counter = 0; counter < dim; counter++){
     sum_grad_squared += (grad[counter] * grad[counter]);
   }
-  double norm_grad = sqrt(sum_grad_squared); 
+  double effective_vector = sqrt(sum_grad_squared); 
 
   int num_iter =0;
   double *negative_grad = calloc (dim, sizeof (double));
@@ -596,7 +596,7 @@ double gradient_descent_newton(int dim, double function, double *grad, double*x,
     mA = &(mA_view.matrix);
 
     gsl_matrix_set_identity(mA);
-    gsl_matrix_scale(mA,epsilon);
+    gsl_matrix_scale(mA,epsilon); 
     gsl_matrix_add(mA,gsl_hessian);
 
 
@@ -619,7 +619,7 @@ double gradient_descent_newton(int dim, double function, double *grad, double*x,
     for (int counter = 0; counter < dim; counter++){
     sum_grad_squared += (grad[counter] * grad[counter]);
     }
-    norm_grad = sqrt(sum_grad_squared);
+    effective_vector = sqrt(sum_grad_squared);
 
     printf("Iteration: %d \t y = %.6f \t",num_iter,function);
     fprintf(out_file,"Iteration: %d \t y = %.6f \t",num_iter,function);
@@ -637,13 +637,13 @@ double gradient_descent_newton(int dim, double function, double *grad, double*x,
         fprintf(out_file," %.6f ]\n",x[i]);
       }
     }
-    printf("vector = %.6f\n",norm_grad);
+    printf("vector = %.6f\n",effective_vector);
 
-    if (norm_grad < threshold) {
+    if (effective_vector < threshold) {
       break;
     }
 
-    if ((isnan(norm_grad) || (isinf(norm_grad)))){
+    if ((isnan(effective_vector) || (isinf(effective_vector)))){
       success = false;
       break;
     }
@@ -653,7 +653,7 @@ double gradient_descent_newton(int dim, double function, double *grad, double*x,
   // print results
   if (success == false || num_iter == max_iter){
     printf("Gradient descent does not converge.\n");
-    printf("%.6f",norm_grad);
+    printf("%.6f",effective_vector);
 
     FILE *out_file; // If it does not converge, rewrite the file to show no output
     out_file = fopen ("output.csv", "w");
@@ -674,5 +674,5 @@ double gradient_descent_newton(int dim, double function, double *grad, double*x,
       }
     }
   }
-  return norm_grad;
+  return effective_vector;
 }
