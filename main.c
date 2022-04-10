@@ -95,9 +95,18 @@ int main()
     // printf("Max range, Min range: \n"); // max_range, min_range
 
     double alpha;
+    double threshold;
+    int iteration
 
     printf("Enter alpha: ");
     scanf("%lf", &alpha);
+
+    printf("Enter alpha: ");
+    scanf("%lf", &threshold);
+
+
+    printf("Enter alpha: ");
+    scanf("%lf", &iteration);
 
     printf("dim is %d, alpha is %lf, max range is %lf, min range is %lf \n", dim, alpha, max_range, min_range);
 
@@ -119,11 +128,7 @@ int main()
     // dim = 4, range = [1.001,1.005], seed = 10, alpha = 0.001075, threshold = 1e-5, max_iter = 10000
     
     // gradient_descent_simple(dim,function,grad,x,hessian,0.0175,1e-5,1000);
-    gradient_descent_simple(dim,function,grad,x,hessian,alpha,1e-5,1000);
-    func_surface_plot(dim, grad, hessian, max_range, min_range);
-    free(x);
-    free(grad);
-    free(hessian);
+    gradient_descent_simple(dim,function,grad,x,hessian,alpha,threshold,iteration);
   }
 
   else if (input == 1){
@@ -131,9 +136,18 @@ int main()
     printf("Momentum Gradient Descent \n");
     double alpha;
     double momentum;
+    double threshold;
+    int iteration
 
     printf("Enter alpha: ");
     scanf("%lf", &alpha);
+
+    printf("Enter alpha: ");
+    scanf("%lf", &threshold);
+
+
+    printf("Enter alpha: ");
+    scanf("%lf", &iteration);
 
     printf("Enter momentum: ");
     scanf("%lf", &momentum);
@@ -141,7 +155,7 @@ int main()
     x[0] = 3;
     x[1] = 3;
     function = valueandderivatives_matya2d(dim,x,grad,hessian);
-    gradient_descent_armijo(dim,function,grad,x,hessian,alpha,momentum,1e-5,1000); 
+    gradient_descent_armijo(dim,function,grad,x,hessian,alpha,momentum,threshold,iteration); 
   }
 
   else if (input == 2){
@@ -153,9 +167,17 @@ int main()
     // printf("Max range, Min range: \n"); // max_range, min_range
 
     double threshold;
+    double epsilon;
+    int iteration;
 
     printf("Enter threshold: ");
     scanf("%lf", &threshold);
+
+    printf("Enter epsilon: ");
+    scanf("%lf", &epsilon);
+
+    printf("Enter iteration: ");
+    scanf("%lf", &iteration);
 
     printf("dim is %d, threshold is %lf, max range is %lf, min range is %lf \n", dim, threshold, max_range, min_range);
 
@@ -169,13 +191,13 @@ int main()
     x[1] = 0;
     function = valueandderivatives_beale2d(dim,x,grad,hessian);
     // gradient_descent_newton(dim,function,grad,x,hessian,1e-10,1e-7,1000);
-    gradient_descent_newton(dim,function,grad,x,hessian,threshold,1e-7,1000);
-    func_surface_plot(dim, grad, hessian, max_range, min_range);
-    free(x);
-    free(grad);
-    free(hessian);
+    gradient_descent_newton(dim,function,grad,x,hessian,threshold,epsilon,iteration);
   }
   
+  func_surface_plot(dim, grad, hessian, max_range, min_range);
+  free(x);
+  free(grad);
+  free(hessian);
   //plotovergrid2d( "./griddata.txt");
   return 0;
 }
