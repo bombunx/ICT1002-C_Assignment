@@ -53,9 +53,9 @@ double valueandderivatives_coville4d( int dim, double *x , double* grad, double 
 
 
 // Gradient Descent Functions
-double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter);
-double gradient_descent_armijo(int dim, double function, double *grad, double *x, double *hess, double alpha,  double momentum, double threshold, int max_iter);
-double gradient_descent_newton(int dim, double function, double *grad, double*x, double *hess, double threshold, double epsilon, int max_iter);
+double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter,double (*)(int,double*,double*,double*));
+double gradient_descent_armijo(int dim, double function, double *grad, double *x, double *hess, double alpha,  double momentum, double threshold, int max_iter, double (*)(int,double*,double*,double*));
+double gradient_descent_newton(int dim, double function, double *grad, double*x, double *hess, double threshold, double epsilon, int max_iter, double (*)(int,double*,double*,double*));
 
 int main()
 {
@@ -82,7 +82,9 @@ int main()
   double * hessian = calloc (dim * dim, sizeof(double));
   double function;
 
-  
+  double(*test_function)(int,double*,double*,double*);
+  test_function = &valueandderivatives_matya2d;
+
   printf("Select algorithm: \n [0] Simple Gradient Descent \n [1] Momentum Gradient Descent \n [2] Gradient Descent with Newton's Method \n");
 
   scanf("%d", &input);
@@ -96,17 +98,17 @@ int main()
 
     double alpha;
     double threshold;
-    int iteration
+    int iteration;
 
     printf("Enter alpha: ");
     scanf("%lf", &alpha);
 
-    printf("Enter alpha: ");
+    printf("Enter threshold: ");
     scanf("%lf", &threshold);
 
 
-    printf("Enter alpha: ");
-    scanf("%lf", &iteration);
+    printf("Enter iteration: ");
+    scanf("%d", &iteration);
 
     printf("dim is %d, alpha is %lf, max range is %lf, min range is %lf \n", dim, alpha, max_range, min_range);
 
@@ -117,8 +119,8 @@ int main()
     //   x[i] = max_range * ((1.0 * rand()) / RAND_MAX) + min_range;
     // }
     x[0] = 3;
-    x[1] = 0;
-    function = valueandderivatives_beale2d(dim,x,grad,hessian);
+    x[1] = 3;
+    function = (*test_function)(dim,x,grad,hessian);
     // Parameters for Matya2D Function -- Gradient Descent Simple
     // dim = 4, range = [0.0,1.0], seed = 5, alpha = 0.5, threshold = 1e-5, max_iter = 1000
 
@@ -128,7 +130,7 @@ int main()
     // dim = 4, range = [1.001,1.005], seed = 10, alpha = 0.001075, threshold = 1e-5, max_iter = 10000
     
     // gradient_descent_simple(dim,function,grad,x,hessian,0.0175,1e-5,1000);
-    gradient_descent_simple(dim,function,grad,x,hessian,alpha,threshold,iteration);
+    gradient_descent_simple(dim,function,grad,x,hessian,alpha,threshold,iteration,test_function);
   }
 
   else if (input == 1){
@@ -137,17 +139,17 @@ int main()
     double alpha;
     double momentum;
     double threshold;
-    int iteration
+    int iteration;
 
     printf("Enter alpha: ");
     scanf("%lf", &alpha);
 
-    printf("Enter alpha: ");
+    printf("Enter threshold: ");
     scanf("%lf", &threshold);
 
 
-    printf("Enter alpha: ");
-    scanf("%lf", &iteration);
+    printf("Enter iteration: ");
+    scanf("%d", &iteration);
 
     printf("Enter momentum: ");
     scanf("%lf", &momentum);
@@ -155,7 +157,7 @@ int main()
     x[0] = 3;
     x[1] = 3;
     function = valueandderivatives_matya2d(dim,x,grad,hessian);
-    gradient_descent_armijo(dim,function,grad,x,hessian,alpha,momentum,threshold,iteration); 
+    gradient_descent_armijo(dim,function,grad,x,hessian,alpha,momentum,threshold,iteration, test_function); 
   }
 
   else if (input == 2){
@@ -177,7 +179,7 @@ int main()
     scanf("%lf", &epsilon);
 
     printf("Enter iteration: ");
-    scanf("%lf", &iteration);
+    scanf("%d", &iteration);
 
     printf("dim is %d, threshold is %lf, max range is %lf, min range is %lf \n", dim, threshold, max_range, min_range);
 
@@ -191,7 +193,7 @@ int main()
     x[1] = 0;
     function = valueandderivatives_beale2d(dim,x,grad,hessian);
     // gradient_descent_newton(dim,function,grad,x,hessian,1e-10,1e-7,1000);
-    gradient_descent_newton(dim,function,grad,x,hessian,threshold,epsilon,iteration);
+    gradient_descent_newton(dim,function,grad,x,hessian,threshold,epsilon,iteration,test_function);
   }
   
   func_surface_plot(dim, grad, hessian, max_range, min_range);
@@ -369,7 +371,7 @@ void func_surface_plot(int dim, double* grad, double *hessian_vecshaped, const d
 
 
 
-double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter){
+double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter, double (*functionPointer)(int dim, double *x, double* grad,double* hess)){
 
   double sum_grad_squared;
   double effective_vector;
@@ -412,7 +414,7 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
       x[counter] = x[counter] + (alpha * grad[counter] * -1);
     }
     // new y values
-    function = valueandderivatives_beale2d(2,x,grad,hess);
+    function = (*functionPointer)(dim,x,grad,hess);
     // function=valueandderivatives_coville4d(4,x,grad,hess);
     
     num_iter++;
@@ -481,12 +483,10 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
   return effective_vector;
 }
 
-double gradient_descent_armijo(int dim, double function, double *grad, double *x, double *hess, double alpha, double momentum, double threshold, int max_iter){
+double gradient_descent_armijo(int dim, double function, double *grad, double *x, double *hess, double alpha, double momentum, double threshold, int max_iter, double (*functionPointer)(int dim, double *x, double* grad,double* hess)){
 {
   double sum_grad_squared;
   double effective_vector;
-  double *negative_grad = calloc (dim, sizeof (double));
-
   double *change = calloc(dim, sizeof(double));
 
   double *new_change = calloc(dim, sizeof(double));
@@ -536,7 +536,7 @@ double gradient_descent_armijo(int dim, double function, double *grad, double *x
     }
 
     change = new_change;
-    function = valueandderivatives_matya2d(dim,x,grad,hess);
+    function = functionPointer(dim,x,grad,hess);
 
     num_iter++;
 
@@ -571,15 +571,39 @@ double gradient_descent_armijo(int dim, double function, double *grad, double *x
     if (isnan(effective_vector) || (isinf(effective_vector))){
       success = false;
       break;
+    }    
+  }
+  fclose(out_file); // Close the output file after loop ends
+
+  // print results
+  if (success == false || num_iter == max_iter){
+    printf("Gradient descent does not converge.\n");
+    printf("%.6f",effective_vector);
+
+    FILE *out_file; // If it does not converge, rewrite the file to show no output
+    out_file = fopen ("output.txt", "w");
+    fprintf(out_file,"Gradient descent does not converge.\n");
+    fclose(out_file);
+  }
+
+  else{
+    // Solution
+    printf("Solution: y = %f \t ",function);
+    printf("x =[");
+    for (int i = 0; i < dim;i++){
+      if (i != (dim-1)){
+        printf(" %.6f, ",x[i]);
+      }
+      else{
+        printf(" %.6f ]\t",x[i]);
+      }
     }
   }
+  return effective_vector;
 }
 }
 
-
-
-
-double gradient_descent_newton(int dim, double function, double *grad, double*x, double *hess, double threshold, double epsilon, int max_iter){
+double gradient_descent_newton(int dim, double function, double *grad, double*x, double *hess, double threshold, double epsilon, int max_iter, double (*functionPointer)(int dim, double *x, double* grad,double* hess)){
 
   
   double sum_grad_squared;
@@ -629,7 +653,7 @@ double gradient_descent_newton(int dim, double function, double *grad, double*x,
     for (int i = 0; i < dim; i++) {
       x[i] = gsl_vector_get(gsl_x,i); // new x values
     }
-    function = valueandderivatives_beale2d(dim,x,grad,hess);    
+    function = functionPointer(dim,x,grad,hess);    
     num_iter++;
 
 
@@ -678,7 +702,7 @@ double gradient_descent_newton(int dim, double function, double *grad, double*x,
     printf("%.6f",effective_vector);
 
     FILE *out_file; // If it does not converge, rewrite the file to show no output
-    out_file = fopen ("output.csv", "w");
+    out_file = fopen ("output.txt", "w");
     fprintf(out_file,"Gradient descent does not converge.\n");
     fclose(out_file);
   }
