@@ -90,25 +90,29 @@ def plot(xs, ys):
 with open('output.txt') as file:
     content = file.readlines()
 
-for item in content:
-    for char in item:
-        # store y values in curve_y
-        if char == "y":
-            index = item.index(char)
-            curve_y.append(float(item[index+4:index+12]))
-        # get x values from output file
-        if char == "x":
-            index = item.index(char)
-            x = item[index+5:index+24].split(",  ")
-            temp_x.append(x)
+try:
+    for item in content:
+        for char in item:
+            # store y values in curve_y
+            if char == "y":
+                index = item.index(char)
+                curve_y.append(float(item[index+4:index+12]))
+            # get x values from output file
+            if char == "x":
+                index = item.index(char)
+                x = item[index+5:index+24].split(",  ")
+                temp_x.append(x)
 
-#  store x values in curve_x
-for item in temp_x:
-    x0 = np.array([float(item[0]),float(item[1])])
-    curve_x.append(x0)
+    #  store x values in curve_x
+    for item in temp_x:
+        x0 = np.array([float(item[0]),float(item[1])])
+        curve_x.append(x0)
 
-curve_x = np.array(curve_x)
-curve_y = np.array(curve_y)
+    curve_x = np.array(curve_x)
+    curve_y = np.array(curve_y)
 
-
-plot(curve_x, curve_y)
+    plot(curve_x, curve_y)
+except:
+    print("Oops! The gradient descent did not converge!")
+    print("Please retry your program in C with another set of values!")
+    print()
