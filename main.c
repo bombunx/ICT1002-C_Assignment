@@ -109,15 +109,11 @@ int main()
 
     printf("dim is %d, alpha is %lf, max range is %lf, min range is %lf \n", dim, alpha, max_range, min_range);
 
-    
     // initialise starting point
     srand (seed); // seed random number generator
     for(int i =0;i < dim; i++){
       x[i] = fmod(rand(),(max_range-min_range+1)) + min_range;
     }
-    // printf("%lf, %lf",x[0], x[1]);
-    // x[0] = 3;
-    // x[1] = 3;
     function = (*test_function)(dim,x,grad,hessian);
 
     // Parameters for Matya2D Function -- Gradient Descent Simple
@@ -157,9 +153,6 @@ int main()
     for(int i =0;i < dim; i++){
       x[i] = fmod(rand(),(max_range-min_range+1)) + min_range;
     }
-    // x[0] = 3;
-    // x[1] = 3;
-    // function = valueandderivatives_matya2d(dim,x,grad,hessian);
     function = (*test_function)(dim,x,grad,hessian);
     gradient_descent_armijo(dim,function,grad,x,hessian,alpha,momentum,threshold,iteration, test_function); 
   }
