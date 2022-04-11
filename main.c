@@ -15,7 +15,7 @@ double valueonly_matya2d( int dim, double *x);
 double valueandderivatives_matya2d( int dim, double *x , double* grad, double *hessian_vecshaped);
 
 // Function surface 
-void func_surface_plot(int dim, double* grad, double *hessian_vecshaped, const double max_range, const double min_range);
+void func_surface_plot(int dim, double* grad, double *hessian_vecshaped, const double max_range, const double min_range, double (*)(int,double*,double*,double*));
 
 double valueonly_coville4d( int dim, double *x){
     double x1 = x[0];
@@ -53,7 +53,7 @@ double valueandderivatives_coville4d( int dim, double *x , double* grad, double 
 
 
 // Gradient Descent Functions
-double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter,double (*)(int,double*,double*,double*));
+double gradient_descent_simple(int dim, double function, double *grad, double *x, double *hess, double alpha, double threshold, int max_iter, double (*)(int,double*,double*,double*));
 double gradient_descent_armijo(int dim, double function, double *grad, double *x, double *hess, double alpha,  double momentum, double threshold, int max_iter, double (*)(int,double*,double*,double*));
 double gradient_descent_newton(int dim, double function, double *grad, double*x, double *hess, double threshold, double epsilon, int max_iter, double (*)(int,double*,double*,double*));
 
@@ -61,20 +61,20 @@ int main()
 {
   // User input
   int input;
-  // int dim = 2;
-  // double max_range = 10;
-  // double min_range = -10;
-
-  int dim;
+  int dim, seed;
   double max_range;
   double min_range;
+
   printf("Enter dimensions: ");
   scanf("%d", &dim);
+
+  printf("Enter random number generator seed: ");
+  scanf("%d", &seed);
 
   printf("Enter max range: ");
   scanf("%lf", &max_range);
 
-  printf("Enter min range:");
+  printf("Enter min range: ");
   scanf("%lf", &min_range);
 
   double * x = malloc (dim * sizeof (double));
@@ -93,8 +93,6 @@ int main()
   if (input == 0){
     // Simple Gradient Descent
     printf("Simple Gradient Descent \n");
-    // printf("Set parameters (dim, alpha): \n"); // dim, alpha
-    // printf("Max range, Min range: \n"); // max_range, min_range
 
     double alpha;
     double threshold;
@@ -106,7 +104,6 @@ int main()
     printf("Enter threshold: ");
     scanf("%lf", &threshold);
 
-
     printf("Enter iteration: ");
     scanf("%d", &iteration);
 
@@ -114,13 +111,15 @@ int main()
 
     
     // initialise starting point
-    // srand (5); // seed random number generator
-    // for(int i =0;i < dim; i++){
-    //   x[i] = max_range * ((1.0 * rand()) / RAND_MAX) + min_range;
-    // }
-    x[0] = 3;
-    x[1] = 3;
+    srand (seed); // seed random number generator
+    for(int i =0;i < dim; i++){
+      x[i] = fmod(rand(),(max_range-min_range+1)) + min_range;
+    }
+    // printf("%lf, %lf",x[0], x[1]);
+    // x[0] = 3;
+    // x[1] = 3;
     function = (*test_function)(dim,x,grad,hessian);
+
     // Parameters for Matya2D Function -- Gradient Descent Simple
     // dim = 4, range = [0.0,1.0], seed = 5, alpha = 0.5, threshold = 1e-5, max_iter = 1000
 
@@ -136,6 +135,7 @@ int main()
   else if (input == 1){
     // Momentum Gradient Descent
     printf("Momentum Gradient Descent \n");
+
     double alpha;
     double momentum;
     double threshold;
@@ -144,39 +144,39 @@ int main()
     printf("Enter alpha: ");
     scanf("%lf", &alpha);
 
+    printf("Enter momentum: ");
+    scanf("%lf", &momentum);
+
     printf("Enter threshold: ");
     scanf("%lf", &threshold);
-
 
     printf("Enter iteration: ");
     scanf("%d", &iteration);
 
-    printf("Enter momentum: ");
-    scanf("%lf", &momentum);
-
-    x[0] = 3;
-    x[1] = 3;
-    function = valueandderivatives_matya2d(dim,x,grad,hessian);
+    srand (seed); // seed random number generator
+    for(int i =0;i < dim; i++){
+      x[i] = fmod(rand(),(max_range-min_range+1)) + min_range;
+    }
+    // x[0] = 3;
+    // x[1] = 3;
+    // function = valueandderivatives_matya2d(dim,x,grad,hessian);
+    function = (*test_function)(dim,x,grad,hessian);
     gradient_descent_armijo(dim,function,grad,x,hessian,alpha,momentum,threshold,iteration, test_function); 
   }
 
   else if (input == 2){
     // Gradient Descent with Newton's Method
     printf("Gradient Descent with Newton's Method \n");
-    // Simple Gradient Descent
-    printf("Simple Gradient Descent \n");
-    // printf("Set parameters (dim, alpha): \n"); // dim, alpha
-    // printf("Max range, Min range: \n"); // max_range, min_range
 
     double threshold;
     double epsilon;
     int iteration;
 
-    printf("Enter threshold: ");
-    scanf("%lf", &threshold);
-
     printf("Enter epsilon: ");
     scanf("%lf", &epsilon);
+
+    printf("Enter threshold: ");
+    scanf("%lf", &threshold);
 
     printf("Enter iteration: ");
     scanf("%d", &iteration);
@@ -189,14 +189,20 @@ int main()
     // for(int i =0;i < dim; i++){
     //   x[i] = max_range * ((1.0 * rand()) / RAND_MAX) + min_range;
     // }
-    x[0] = 2;
-    x[1] = 0;
-    function = valueandderivatives_beale2d(dim,x,grad,hessian);
+    // x[0] = 2;
+    // x[1] = 0;
+    // function = valueandderivatives_beale2d(dim,x,grad,hessian);
+
+    srand (seed); // seed random number generator
+    for(int i =0;i < dim; i++){
+      x[i] = fmod(rand(),(max_range-min_range+1)) + min_range;
+    }
+    function = (*test_function)(dim,x,grad,hessian);
     // gradient_descent_newton(dim,function,grad,x,hessian,1e-10,1e-7,1000);
     gradient_descent_newton(dim,function,grad,x,hessian,threshold,epsilon,iteration,test_function);
   }
   
-  func_surface_plot(dim, grad, hessian, max_range, min_range);
+  func_surface_plot(dim, grad, hessian, max_range, min_range, test_function);
   free(x);
   free(grad);
   free(hessian);
@@ -326,16 +332,12 @@ double valueandderivatives_matya2d( int dim, double *x , double* grad, double *h
 }
 
 
-void func_surface_plot(int dim, double* grad, double *hessian_vecshaped, const double max_range, const double min_range){
+void func_surface_plot(int dim, double* grad, double *hessian_vecshaped, const double max_range, const double min_range, double (*functionPointer)(int dim, double *x, double* grad,double* hess)){
   double * x = malloc (dim * sizeof (double));
   double function;
 
   FILE *out_file; // output file
   out_file = fopen ("funcSurface.txt", "w");
-
-  // x[0] = min_range;
-  // x[1] = max_range;
-  // function = valueandderivatives_beale2d(dim,x,grad,hessian_vecshaped);
 
   // x_1 value
   fprintf(out_file,"x_1 = [");
@@ -354,13 +356,12 @@ void func_surface_plot(int dim, double* grad, double *hessian_vecshaped, const d
   fprintf(out_file,"]\n");
 
   // func / y value
-
   for (double i = min_range; i<max_range; i+=0.5) {
     x[1] = i;
     fprintf(out_file,"y = [");
     for (double j = min_range; j<max_range; j+=0.5){
       x[0] = j;
-      function = valueandderivatives_beale2d(dim,x,grad,hessian_vecshaped);
+      function = (*functionPointer)(dim,x,grad,hessian_vecshaped);
       fprintf(out_file,"%.6f ", function);
     }
     fprintf(out_file,"]\n");
@@ -459,7 +460,7 @@ double gradient_descent_simple(int dim, double function, double *grad, double *x
   // print results
   if (success == false || num_iter == max_iter){
     printf("Gradient descent does not converge.\n");
-    printf("%.6f",effective_vector);
+    printf("Effective Vector: %.6f",effective_vector);
 
     FILE *out_file; // If it does not converge, rewrite the file to show no output
     out_file = fopen ("output.txt", "w");

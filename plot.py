@@ -87,7 +87,7 @@ def plot(xs, ys):
     plt.show()
 
 
-with open('output.csv') as file:
+with open('output.txt') as file:
     content = file.readlines()
 
 for item in content:
